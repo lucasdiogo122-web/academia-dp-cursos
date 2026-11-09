@@ -17,6 +17,7 @@ model User {
   mustChangePassword Boolean @default(false)
   createdAt     DateTime   @default(now())
   purchases     Purchase[]
+  lessonCompletions LessonCompletion[]
 }
 
 model Course {
@@ -54,6 +55,21 @@ model Lesson {
   moduleId      String
   module        Module       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   files         LessonFile[]
+  completions   LessonCompletion[]
+}
+
+/// Marca que um aluno assistiu uma aula até o fim (evento panda_ended do
+/// player). Usado para calcular o progresso do curso e liberar o certificado.
+model LessonCompletion {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+
+  @@unique([userId, lessonId])
+  @@index([userId])
 }
 
 /// Material de apoio (PDF, planilha etc.) anexado a uma aula, armazenado no
@@ -90,6 +106,11 @@ model Purchase {
   /// Calculado quando o pagamento é aprovado (paidAt + accessDurationDays do
   /// curso). null = acesso vitalício.
   accessExpiresAt DateTime?
+  /// Preenchido quando o aluno conclui 100% das aulas do curso (libera o
+  /// certificado).
+  completedAt     DateTime?
+  /// Evita reenviar o e-mail de certificado disponível mais de uma vez.
+  certificateEmailSentAt DateTime?
 
   @@index([userId])
   @@index([courseId])

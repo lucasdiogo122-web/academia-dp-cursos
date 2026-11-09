@@ -6,7 +6,7 @@ export default async function Footer() {
   await connection();
 
   return (
-    <footer className="mt-auto border-t border-black/5 bg-white py-8 text-sm text-foreground/60">
+    <footer className="mt-auto border-t border-black/5 bg-white py-8 text-sm text-foreground/60 print:hidden">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <p>
           © {new Date().getFullYear()} Academia do Departamento Pessoal. Todos os

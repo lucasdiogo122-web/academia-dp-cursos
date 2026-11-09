@@ -52,6 +52,13 @@ export default async function AulaPage({
       ? flatLessons[currentIndex + 1]
       : null;
 
+  const completions = await prisma.lessonCompletion.findMany({
+    where: { userId: session.user.id, lessonId: { in: flatLessons.map((l) => l.id) } },
+    select: { lessonId: true },
+  });
+  const completedIds = new Set(completions.map((c) => c.lessonId));
+  const isCurrentCompleted = completedIds.has(lesson.id);
+
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
       <div>
@@ -63,10 +70,17 @@ export default async function AulaPage({
         </Link>
 
         <div className="mt-3">
-          <PandaVideoPlayer videoId={lesson.pandaVideoId} />
+          <PandaVideoPlayer videoId={lesson.pandaVideoId} lessonId={lesson.id} />
         </div>
 
-        <h1 className="mt-5 text-xl font-bold text-brand">{lesson.title}</h1>
+        <div className="mt-5 flex items-center gap-3">
+          <h1 className="text-xl font-bold text-brand">{lesson.title}</h1>
+          {isCurrentCompleted && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent-dark">
+              ✓ Aula concluída
+            </span>
+          )}
+        </div>
         {lesson.description && (
           <p className="mt-2 text-sm text-foreground/70">{lesson.description}</p>
         )}
@@ -123,21 +137,26 @@ export default async function AulaPage({
               </h2>
             </div>
             <ul className="divide-y divide-black/5">
-              {mod.lessons.map((l) => (
-                <li key={l.id}>
-                  <Link
-                    href={`/membros/aula/${l.id}`}
-                    className={`flex items-center gap-2 px-4 py-2.5 text-sm ${
-                      l.id === lesson.id
-                        ? "bg-accent/10 font-medium text-accent-dark"
-                        : "text-foreground/75 hover:bg-brand/5"
-                    }`}
-                  >
-                    <span className="text-xs">{l.id === lesson.id ? "▶" : "○"}</span>
-                    {l.title}
-                  </Link>
-                </li>
-              ))}
+              {mod.lessons.map((l) => {
+                const done = completedIds.has(l.id);
+                return (
+                  <li key={l.id}>
+                    <Link
+                      href={`/membros/aula/${l.id}`}
+                      className={`flex items-center gap-2 px-4 py-2.5 text-sm ${
+                        l.id === lesson.id
+                          ? "bg-accent/10 font-medium text-accent-dark"
+                          : "text-foreground/75 hover:bg-brand/5"
+                      }`}
+                    >
+                      <span className={`text-xs ${done ? "text-accent-dark" : ""}`}>
+                        {done ? "✓" : l.id === lesson.id ? "▶" : "○"}
+                      </span>
+                      {l.title}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}
