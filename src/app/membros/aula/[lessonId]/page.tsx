@@ -21,6 +21,7 @@ export default async function AulaPage({
   const lesson = await prisma.lesson.findUnique({
     where: { id: lessonId },
     include: {
+      files: { orderBy: { createdAt: "asc" } },
       module: {
         include: {
           course: {
@@ -68,6 +69,27 @@ export default async function AulaPage({
         <h1 className="mt-5 text-xl font-bold text-brand">{lesson.title}</h1>
         {lesson.description && (
           <p className="mt-2 text-sm text-foreground/70">{lesson.description}</p>
+        )}
+
+        {lesson.files.length > 0 && (
+          <div className="mt-5 rounded-lg border border-black/10 bg-white p-4">
+            <h2 className="text-sm font-semibold text-brand">Materiais de apoio</h2>
+            <ul className="mt-2 space-y-1.5">
+              {lesson.files.map((file) => (
+                <li key={file.id}>
+                  <a
+                    href={file.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                    className="text-sm text-accent-dark hover:underline"
+                  >
+                    📎 {file.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         <div className="mt-6 flex items-center justify-between border-t border-black/5 pt-4">

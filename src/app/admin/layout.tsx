@@ -47,6 +47,12 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         >
           Usuários e acessos
         </Link>
+        <Link
+          href="/admin/cursos"
+          className="border-b-2 border-transparent px-1 pb-3 text-foreground/70 hover:border-accent hover:text-brand"
+        >
+          Conteúdo
+        </Link>
       </nav>
 
       {children}
